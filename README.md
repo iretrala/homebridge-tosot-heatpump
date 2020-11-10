@@ -1,6 +1,6 @@
 # Control Tosot and partners heat pumps with Apple HomeKit
 
-This plugin is based on https://github.com/ddenisyuk/homebridge-gree-heatercooler awesome hard work with a few quality of life additions.
+This plugins is based on https://github.com/ddenisyuk/homebridge-gree-heatercooler.
 
 Diff:
 - uses HeaterCooler instead Thermostat;
