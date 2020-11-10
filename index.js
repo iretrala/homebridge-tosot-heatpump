@@ -63,7 +63,7 @@ function TosotHeatpump(log, config) {
         .setProps({
             minValue: 16,
             maxValue: 30,
-            minStep: 1
+            minStep: 0.5
         })
         .on('set', this.setTargetTemperature.bind(this))
         .on('get', this.getTargetTemperature.bind(this));
