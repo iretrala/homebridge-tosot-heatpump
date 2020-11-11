@@ -1,0 +1,30 @@
+{
+  "name": "homebridge-tosot-heatpump",
+  "version": "1.0.9",
+  "description": "Tosot and partner compatible plugin for Homebridge.",
+  "license": "MIT",
+  "keywords": [
+    "homebridge-plugin",
+    "tosot",
+    "heat pump",
+    "air contitioning",
+    "gree ac",
+    "homebridge heatercooler"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iretrala/homebridge-tosot-heatpump.git"
+  },
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.2.0"
+  },
+  "dependencies": {
+    "npm": "^6.1.0"
+  },
+  "bugs": {
+    "url": "https://github.com/iretrala/homebridge-tosot-heatpump/issues"
+  },
+  "homepage": "https://github.com/iretrala/homebridge-tosot-heatpump#readme",
+  "main": "index.js"
+}
