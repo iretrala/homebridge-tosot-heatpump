@@ -6,11 +6,38 @@
 	objectVersion = 50;
 	objects = {
 
+/* Begin PBXFileReference section */
+		60685481255C9A240050F8D6 /* package.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = package.json; sourceTree = "<group>"; };
+		60685482255C9A240050F8D6 /* example.config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = example.config.json; sourceTree = "<group>"; };
+		60685483255C9A240050F8D6 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		60685484255C9A240050F8D6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		60685486255C9A240050F8D6 /* commandEnums.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = commandEnums.js; sourceTree = "<group>"; };
+		60685487255C9A240050F8D6 /* deviceFactory.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = deviceFactory.js; sourceTree = "<group>"; };
+		60685488255C9A240050F8D6 /* encryptionService.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = encryptionService.js; sourceTree = "<group>"; };
+		60685489255C9A240050F8D6 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
 /* Begin PBXGroup section */
 		6068547A255C998C0050F8D6 = {
 			isa = PBXGroup;
 			children = (
+				60685485255C9A240050F8D6 /* app */,
+				60685482255C9A240050F8D6 /* example.config.json */,
+				60685489255C9A240050F8D6 /* index.js */,
+				60685483255C9A240050F8D6 /* LICENSE */,
+				60685481255C9A240050F8D6 /* package.json */,
+				60685484255C9A240050F8D6 /* README.md */,
 			);
+			sourceTree = "<group>";
+		};
+		60685485255C9A240050F8D6 /* app */ = {
+			isa = PBXGroup;
+			children = (
+				60685486255C9A240050F8D6 /* commandEnums.js */,
+				60685487255C9A240050F8D6 /* deviceFactory.js */,
+				60685488255C9A240050F8D6 /* encryptionService.js */,
+			);
+			path = app;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
