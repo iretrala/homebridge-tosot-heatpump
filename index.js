@@ -6,37 +6,38 @@ module.exports = function (homebridge) {
     console.log(homebridge.platformAccessory);
     Service = homebridge.hap.Service;
     Characteristic = homebridge.hap.Characteristic;
-    homebridge.registerAccessory('homebridge-tosot-heatpump', 'TosotHeatpump', TosotHeatpump);
+    homebridge.registerAccessory('homebridge-tosot-HeaterCooler', 'TosotHeaterCooler', TosotHeaterCooler);
 }
 
-function TosotHeatpump(log, config) {
+function TosotHeaterCooler(log, config) {
     this.log = log;
     this.name = config.name;
     this.host = config.host;
+    this.SerialNumber = config.SerialNumber;
     this.updateInterval = config.updateInterval || 10000;
     this.acTempSensorShift = config.acTempSensorShift || 40;
     this.useTargetTempAsCurrent = config.useTargetTempAsCurrent || false;
-    this.model = config.acModel || "Tosot Heatpump";
+    this.model = config.acModel || "Tosot HeaterCooler";
 
     this.services = [];
 
-    this.GreeACService = new Service.Heatpump(this.name);
+    this.TosotACService = new Service.HeaterCooler(this.name);
 
-    this.GreeACService
+    this.TosotACService
         .getCharacteristic(Characteristic.Active)
         .on('get', this.getActive.bind(this))
         .on('set', this.setActive.bind(this));
 
-    this.GreeACService
-        .getCharacteristic(Characteristic.CurrentHeatpumpState)
-        .on('get', this.getCurrentHeatpumpState.bind(this));
+    this.TosotACService
+        .getCharacteristic(Characteristic.CurrentHeaterCoolerState)
+        .on('get', this.getCurrentHeaterCoolerState.bind(this));
 
-    this.GreeACService
-        .getCharacteristic(Characteristic.TargetHeatpumpState)
-        .on('set', this.setTargetHeatpumpState.bind(this))
-        .on('get', this.getTargetHeatpumpState.bind(this));
+    this.TosotACService
+        .getCharacteristic(Characteristic.TargetHeaterCoolerState)
+        .on('set', this.setTargetHeaterCoolerState.bind(this))
+        .on('get', this.getTargetHeaterCoolerState.bind(this));
 
-    this.GreeACService
+    this.TosotACService
         .getCharacteristic(Characteristic.CurrentTemperature)
         .setProps({
             minValue: -100,
@@ -45,35 +46,35 @@ function TosotHeatpump(log, config) {
         })
         .on('get', this.getCurrentTemperature.bind(this));
 
-    this.GreeACService
+    this.TosotACService
         .getCharacteristic(Characteristic.TemperatureDisplayUnits)
         .on('get', this.getTemperatureDisplayUnits.bind(this))
         .on('set', this.setTemperatureDisplayUnits.bind(this));
 
-    this.GreeACService.getCharacteristic(Characteristic.CoolingThresholdTemperature)
+    this.TosotACService.getCharacteristic(Characteristic.CoolingThresholdTemperature)
         .setProps({
             minValue: 16,
             maxValue: 30,
-            minStep: .5
+            minStep: 1
         })
         .on('set', this.setTargetTemperature.bind(this))
         .on('get', this.getTargetTemperature.bind(this));
 
-    this.GreeACService.getCharacteristic(Characteristic.HeatingThresholdTemperature)
+    this.TosotACService.getCharacteristic(Characteristic.HeatingThresholdTemperature)
         .setProps({
             minValue: 16,
             maxValue: 30,
-            minStep: 0.5
+            minStep: 1
         })
         .on('set', this.setTargetTemperature.bind(this))
         .on('get', this.getTargetTemperature.bind(this));
 
-    this.GreeACService
+    this.TosotACService
         .getCharacteristic(Characteristic.SwingMode)
         .on('get', this.getSwingMode.bind(this))
         .on('set', this.setSwingMode.bind(this));
 
-    this.GreeACService
+    this.TosotACService
         .getCharacteristic(Characteristic.RotationSpeed)
         .setProps({
             unit: null,
@@ -86,22 +87,22 @@ function TosotHeatpump(log, config) {
         .on('set', this.setRotationSpeed.bind(this));
 
 
-    this.services.push(this.GreeACService);
+    this.services.push(this.TosotACService);
 
     this.serviceInfo = new Service.AccessoryInformation();
 
     this.serviceInfo
         .setCharacteristic(Characteristic.Name, this.name)
-        .setCharacteristic(Characteristic.Manufacturer, Tosot)
+        .setCharacteristic(Characteristic.Manufacturer, 'Tosot')
         .setCharacteristic(Characteristic.Model, this.model)
-        .setCharacteristic(Characteristic.SerialNumber, this.host.replace(/\./g, ""));
+        .setCharacteristic(Characteristic.SerialNumber, this.SerialNumber)
 
     this.services.push(this.serviceInfo);
 
     this.discover();
 }
 
-TosotHeatpump.prototype = {
+TosotHeaterCooler.prototype = {
 
     getServices: function () {
         return this.services;
@@ -117,48 +118,48 @@ TosotHeatpump.prototype = {
             updateInterval: me.updateInterval,
             onStatus: (deviceModel) => {
                 me.getActive((x, val) => {
-                    me.GreeACService
+                    me.TosotACService
                         .getCharacteristic(Characteristic.Active)
                         .updateValue(val);
                 });
 
-                me.getTargetHeatpumpState((x, val) => {
-                    me.GreeACService
-                        .getCharacteristic(Characteristic.TargetHeatpumpState)
+                me.getTargetHeaterCoolerState((x, val) => {
+                    me.TosotACService
+                        .getCharacteristic(Characteristic.TargetHeaterCoolerState)
                         .updateValue(val);
                 });
 
-                me.getCurrentHeatpumpState((x, val) => {
-                    me.GreeACService
-                        .getCharacteristic(Characteristic.CurrentHeatpumpState)
+                me.getCurrentHeaterCoolerState((x, val) => {
+                    me.TosotACService
+                        .getCharacteristic(Characteristic.CurrentHeaterCoolerState)
                         .updateValue(val);
                 });
 
                 me.getCurrentTemperature((x, val) => {
-                    me.GreeACService
+                    me.TosotACService
                         .getCharacteristic(Characteristic.CurrentTemperature)
                         .updateValue(val);
                 });
 
 
                 me.getTargetTemperature((x, val) => {
-                    me.GreeACService
+                    me.TosotACService
                         .getCharacteristic(Characteristic.CoolingThresholdTemperature)
                         .updateValue(val);
-                    me.GreeACService
+                    me.TosotACService
                         .getCharacteristic(Characteristic.HeatingThresholdTemperature)
                         .updateValue(val);
                 });
 
 
                 me.getSwingMode((x, val) => {
-                    me.GreeACService
+                    me.TosotACService
                         .getCharacteristic(Characteristic.SwingMode)
                         .updateValue(val);
                 });
 
                 me.getRotationSpeed((x, val) => {
-                    me.GreeACService
+                    me.TosotACService
                         .getCharacteristic(Characteristic.RotationSpeed)
                         .updateValue(val);
                 });
@@ -201,22 +202,22 @@ TosotHeatpump.prototype = {
                 ? Characteristic.Active.INACTIVE
                 : Characteristic.Active.ACTIVE);
     },
-    getCurrentHeatpumpState: function (callback) {
+    getCurrentHeaterCoolerState: function (callback) {
         let mode = this.device.getMode(),
             state;
 
         switch (mode) {
             case commands.mode.value.cool:
-                state = Characteristic.CurrentHeatpumpState.COOLING;
+                state = Characteristic.CurrentHeaterCoolerState.COOLING;
                 break;
             case commands.mode.value.heat:
-                state = Characteristic.CurrentHeatpumpState.HEATING;
+                state = Characteristic.CurrentHeaterCoolerState.HEATING;
                 break;
             case commands.mode.value.auto:
-                state = Characteristic.CurrentHeatpumpState.IDLE;
+                state = Characteristic.CurrentHeaterCoolerState.IDLE;
                 break;
             default:
-                state = Characteristic.CurrentHeatpumpState.INACTIVE;
+                state = Characteristic.CurrentHeaterCoolerState.INACTIVE;
         }
 
         callback(null, state);
@@ -236,32 +237,32 @@ TosotHeatpump.prototype = {
         callback(null, Characteristic.TemperatureDisplayUnits.CELSIUS);
     },
 
-    getTargetHeatpumpState: function (callback) {
+    getTargetHeaterCoolerState: function (callback) {
         let mode = this.device.getMode(),
             state;
 
         switch (mode) {
             case commands.mode.value.cool:
-                state = Characteristic.TargetHeatpumpState.COOL;
+                state = Characteristic.TargetHeaterCoolerState.COOL;
                 break;
             case commands.mode.value.heat:
-                state = Characteristic.TargetHeatpumpState.HEAT;
+                state = Characteristic.TargetHeaterCoolerState.HEAT;
                 break;
             default:
-                state = Characteristic.TargetHeatpumpState.AUTO;
+                state = Characteristic.TargetHeaterCoolerState.AUTO;
         }
         callback(null, state);
     },
 
-    setTargetHeatpumpState: function (TargetHeatpumpState, callback, context) {
+    setTargetHeaterCoolerState: function (TargetHeaterCoolerState, callback, context) {
         if (this._isContextValid(context)) {
             let mode;
 
-            switch (TargetHeatpumpState) {
-                case Characteristic.TargetHeatpumpState.HEAT:
+            switch (TargetHeaterCoolerState) {
+                case Characteristic.TargetHeaterCoolerState.HEAT:
                     mode = commands.mode.value.heat;
                     break;
-                case Characteristic.TargetHeatpumpState.COOL:
+                case Characteristic.TargetHeaterCoolerState.COOL:
                     mode = commands.mode.value.cool;
                     break;
                 default:
