@@ -57,8 +57,8 @@ function TosotHeaterCooler(log, config) {
             maxValue: 30,
             minStep: 1
         })
-        .on('set', this.setTargetTemperature.bind(this))
-        .on('get', this.getTargetTemperature.bind(this));
+        .on('set', this.setCoolingThresholdTemperature.bind(this))
+        .on('get', this.getCurrentCoolingThresholdTemperature.bind(this));
 
     this.TosotACService.getCharacteristic(Characteristic.HeatingThresholdTemperature)
         .setProps({
@@ -66,8 +66,8 @@ function TosotHeaterCooler(log, config) {
             maxValue: 30,
             minStep: 1
         })
-        .on('set', this.setTargetTemperature.bind(this))
-        .on('get', this.getTargetTemperature.bind(this));
+        .on('set', this.setHeatingThresholdTemperature.bind(this))
+        .on('get', this.getCurrentHeatingThresholdTemperature.bind(this));
 
     this.TosotACService
         .getCharacteristic(Characteristic.SwingMode)
@@ -141,7 +141,7 @@ TosotHeaterCooler.prototype = {
                         .updateValue(val);
                 });
 
-
+/*
                 me.getTargetTemperature((x, val) => {
                     me.TosotACService
                         .getCharacteristic(Characteristic.CoolingThresholdTemperature)
@@ -149,11 +149,20 @@ TosotHeaterCooler.prototype = {
                     me.TosotACService
                         .getCharacteristic(Characteristic.HeatingThresholdTemperature)
                         .updateValue(val);
-                    
-                    log.info('CoolingThresholdTemperature %s', val)
                 });
-
-
+*/
+                me.getCurrentCoolingThresholdTemperature((x, val) => {
+                    me.TosotACService
+                        .getCharacteristic(Characteristic.CoolingThresholdTemperature)
+                        .updateValue(val);
+                });
+                
+                me.getCurrentHeatingThresholdTemperature((x, val) => {
+                    me.TosotACService
+                        .getCharacteristic(Characteristic.HeatingThresholdTemperature)
+                        .updateValue(val);
+                });
+                
                 me.getSwingMode((x, val) => {
                     me.TosotACService
                         .getCharacteristic(Characteristic.SwingMode)
@@ -168,7 +177,7 @@ TosotHeaterCooler.prototype = {
 
             },
             onUpdate: (deviceModel) => {
-                // log.info('Status updated on %s', deviceModel.name)
+                 log.info('Status updated on %s', deviceModel.name)
             },
             onConnected: (deviceModel) => {
                 if (deviceModel.bound == true) {
@@ -207,9 +216,6 @@ TosotHeaterCooler.prototype = {
     getCurrentHeaterCoolerState: function (callback) {
         let mode = this.device.getMode(),
             state;
-
-        let log = this.log;
-        log.info("Current getCurrentHeaterCoolerState: %s", mode);
         
         switch (mode) {
             case commands.mode.value.cool:
@@ -245,9 +251,6 @@ TosotHeaterCooler.prototype = {
     getTargetHeaterCoolerState: function (callback) {
         let mode = this.device.getMode(),
             state;
-        
-        let log = this.log;
-        log.info("Current GETTargetHeaterCoolerState: %s", mode);
 
         switch (mode) {
             case commands.mode.value.cool:
@@ -265,9 +268,6 @@ TosotHeaterCooler.prototype = {
     setTargetHeaterCoolerState: function (TargetHeaterCoolerState, callback, context) {
         if (this._isContextValid(context)) {
             let mode;
-            
-            let log = this.log;
-            log.info("Requested TargetHeaterCoolerState: %s", TargetHeaterCoolerState);
 
             switch (TargetHeaterCoolerState) {
                 case Characteristic.TargetHeaterCoolerState.HEAT:
@@ -289,6 +289,18 @@ TosotHeaterCooler.prototype = {
         callback(null, this.device.getTemp());
     },
 
+    setCoolingThresholdTemperature: function (TargetTemperature, callback, context) {
+        if (this._isContextValid(context)) {
+            this.device.setTemp(parseInt(TargetTemperature));
+        }
+        callback();
+    },
+    setHeatingThresholdTemperature: function (TargetTemperature, callback, context) {
+        if (this._isContextValid(context)) {
+            this.device.setTemp(parseInt(TargetTemperature));
+        }
+        callback();
+    },
     setTargetTemperature: function (TargetTemperature, callback, context) {
         if (this._isContextValid(context)) {
             this.device.setTemp(parseInt(TargetTemperature));
