@@ -1,10 +1,10 @@
 # Control Tosot and partners heat pumps with Apple HomeKit
 
-This plugins is based on https://github.com/ddenisyuk/homebridge-gree-heatercooler.
+This plugins is based on the amazing hardwork of https://github.com/ddenisyuk/homebridge-gree-heatercooler.
 
 Diff:
-- uses HeaterCooler instead Thermostat;
-- no need external temperature sensor and mqtt.
+- Utilizes more options for configuration
+- Config menu for Homebridge (coming soon)
 
 Should work with all Tosot and partners (Tosot+ app) heatpumps.
 
@@ -28,7 +28,8 @@ For each AC device you need to add an accessory and specify the IP address of th
             "accessory": "TosotHeatpump",
             "host": "192.168.1.X",
             "name": "Living room AC",
-            "acModel": "Gree V2",
+            "acModel": "Tosot X5302",
+            "serialnumber": 25b2t646df642t6564
             "useTargetTempAsCurrent": true, // for AC W/O builded in temp sensor
             "updateInterval": 10000
         },
