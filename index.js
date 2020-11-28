@@ -302,7 +302,7 @@ TosotHeaterCooler.prototype = {
     getRotationSpeed: function (callback) {
         let speed = this.device.getFanSpeed();
         speed = speed === commands.fanSpeed.value.auto ? 6 : speed;
-        this.log.debug('Triggered GET Rotation Speed:' value);
+        this.log.debug('Triggered GET Rotation Speed:' speed);
 
         callback(null, speed);
 
@@ -311,7 +311,7 @@ TosotHeaterCooler.prototype = {
         if (this._isContextValid(context)) {
             let speed = RotationSpeed === 6 ? commands.fanSpeed.value.auto : RotationSpeed;
             this.device.setFanSpeed(speed);
-            this.log.debug('Triggered SET Rotation Speed:' value);
+            this.log.debug('Triggered SET Rotation Speed:' speed);
         }
         callback();
     },
