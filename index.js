@@ -57,8 +57,8 @@ function TosotHeaterCooler(log, config) {
             maxValue: 30,
             minStep: 1
         })
-        .on('set', this.setCoolingThresholdTemperature.bind(this))
-        .on('get', this.getCurrentCoolingThresholdTemperature.bind(this));
+        .on('set', this.setTargetTemperature.bind(this))
+        .on('get', this.getTargetTemperature.bind(this));
 
     this.TosotACService.getCharacteristic(Characteristic.HeatingThresholdTemperature)
         .setProps({
@@ -66,8 +66,8 @@ function TosotHeaterCooler(log, config) {
             maxValue: 30,
             minStep: 1
         })
-        .on('set', this.setHeatingThresholdTemperature.bind(this))
-        .on('get', this.getCurrentHeatingThresholdTemperature.bind(this));
+        .on('set', this.setTargetTemperature.bind(this))
+        .on('get', this.getTargetTemperature.bind(this));
 
     this.TosotACService
         .getCharacteristic(Characteristic.SwingMode)
@@ -141,7 +141,7 @@ TosotHeaterCooler.prototype = {
                         .updateValue(val);
                 });
 
-/*
+
                 me.getTargetTemperature((x, val) => {
                     me.TosotACService
                         .getCharacteristic(Characteristic.CoolingThresholdTemperature)
@@ -150,19 +150,8 @@ TosotHeaterCooler.prototype = {
                         .getCharacteristic(Characteristic.HeatingThresholdTemperature)
                         .updateValue(val);
                 });
-*/
-                me.getCurrentCoolingThresholdTemperature((x, val) => {
-                    me.TosotACService
-                        .getCharacteristic(Characteristic.CoolingThresholdTemperature)
-                        .updateValue(val);
-                });
-                
-                me.getCurrentHeatingThresholdTemperature((x, val) => {
-                    me.TosotACService
-                        .getCharacteristic(Characteristic.HeatingThresholdTemperature)
-                        .updateValue(val);
-                });
-                
+
+
                 me.getSwingMode((x, val) => {
                     me.TosotACService
                         .getCharacteristic(Characteristic.SwingMode)
@@ -177,7 +166,7 @@ TosotHeaterCooler.prototype = {
 
             },
             onUpdate: (deviceModel) => {
-                 log.info('Status updated on %s', deviceModel.name)
+                // log.info('Status updated on %s', deviceModel.name)
             },
             onConnected: (deviceModel) => {
                 if (deviceModel.bound == true) {
@@ -216,7 +205,7 @@ TosotHeaterCooler.prototype = {
     getCurrentHeaterCoolerState: function (callback) {
         let mode = this.device.getMode(),
             state;
-        
+
         switch (mode) {
             case commands.mode.value.cool:
                 state = Characteristic.CurrentHeaterCoolerState.COOLING;
@@ -289,18 +278,6 @@ TosotHeaterCooler.prototype = {
         callback(null, this.device.getTemp());
     },
 
-    setCoolingThresholdTemperature: function (TargetTemperature, callback, context) {
-        if (this._isContextValid(context)) {
-            this.device.setTemp(parseInt(TargetTemperature));
-        }
-        callback();
-    },
-    setHeatingThresholdTemperature: function (TargetTemperature, callback, context) {
-        if (this._isContextValid(context)) {
-            this.device.setTemp(parseInt(TargetTemperature));
-        }
-        callback();
-    },
     setTargetTemperature: function (TargetTemperature, callback, context) {
         if (this._isContextValid(context)) {
             this.device.setTemp(parseInt(TargetTemperature));
