@@ -149,6 +149,8 @@ TosotHeaterCooler.prototype = {
                     me.TosotACService
                         .getCharacteristic(Characteristic.HeatingThresholdTemperature)
                         .updateValue(val);
+                    
+                    log.info('CoolingThresholdTemperature %s', val)
                 });
 
 
