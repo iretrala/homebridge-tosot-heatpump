@@ -206,6 +206,9 @@ TosotHeaterCooler.prototype = {
         let mode = this.device.getMode(),
             state;
 
+        let log = this.log;
+        log.info("Current getCurrentHeaterCoolerState: %s", mode);
+        
         switch (mode) {
             case commands.mode.value.cool:
                 state = Characteristic.CurrentHeaterCoolerState.COOLING;
@@ -240,6 +243,9 @@ TosotHeaterCooler.prototype = {
     getTargetHeaterCoolerState: function (callback) {
         let mode = this.device.getMode(),
             state;
+        
+        let log = this.log;
+        log.info("Current GETTargetHeaterCoolerState: %s", mode);
 
         switch (mode) {
             case commands.mode.value.cool:
