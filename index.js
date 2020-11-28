@@ -258,7 +258,7 @@ TosotHeaterCooler.prototype = {
         if (this._isContextValid(context)) {
             let mode;
             
-            let log = this;
+            let log = this.log;
             log.info("Requested TargetHeaterCoolerState: %s", TargetHeaterCoolerState);
 
             switch (TargetHeaterCoolerState) {
