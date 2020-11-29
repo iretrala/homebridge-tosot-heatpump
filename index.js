@@ -345,9 +345,7 @@ TosotHeaterCooler.prototype = {
         }
 
         callback();
-        }
-
-    },
+    };
     setTargetHeaterCoolerState: function (TargetHeaterCoolerState, callback, context) {
         if (this._isContextValid(context)) {
             let mode;
