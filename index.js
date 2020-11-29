@@ -228,6 +228,12 @@ TosotHeaterCooler.prototype = {
         }
         callback();
     },
+    setFanActive: function (Active, callback, context) {
+        if (this._isContextValid(context)) {
+            this.device.setMode(Active === Characteristic.Active.ACTIVE ? commands.mode.value.fan : commands.mode.value.auto);
+        }
+        callback();
+    },
     getActive: function (callback) {
         callback(null,
             this.device.getPower() === commands.power.value.off
@@ -235,10 +241,11 @@ TosotHeaterCooler.prototype = {
                 : Characteristic.Active.ACTIVE);
     },
     getFanActive: function (callback) {
-      callback(null,
-          this.device.getPower() === commands.power.value.off
-              ? Characteristic.Active.INACTIVE
-              : Characteristic.Active.ACTIVE);
+        let mode = this.device.getMode(),
+            state;
+        callback(null, this.device.getMode() == commands.mode.value.fan
+                 ? Characteristic.Active.ACTIVE
+              : Characteristic.Active.INACTIVE);
     },
     getCurrentHeaterCoolerState: function (callback) {
         let mode = this.device.getMode(),
@@ -266,10 +273,13 @@ TosotHeaterCooler.prototype = {
           state;
 
       switch (mode) {
-          case commands.power.value.off:
-              state = Characteristic.CurrentFanState.INACTIVE;
+          case commands.mode.value.heat:
+              state = Characteristic.CurrentFanState.BLOWING_AIR;
               break;
-          case commands.mode.value.on:
+          case commands.mode.value.Fan:
+              state = Characteristic.CurrentFanState.BLOWING_AIR;
+              break;
+          case commands.mode.value.cool:
               state = Characteristic.CurrentFanState.BLOWING_AIR;
               break;
           default:
@@ -324,7 +334,7 @@ TosotHeaterCooler.prototype = {
             case commands.mode.value.fan:
                 state = Characteristic.TargetFanState.MANUAL
             default:
-                state = Characteristic.TargetHeaterCoolerState.AUTO;
+                state = Characteristic.TargetFanState.AUTO;
         }
         callback(null, state);
     },
