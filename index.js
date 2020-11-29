@@ -13,7 +13,7 @@ function TosotHeaterCooler(log, config) {
     this.log = log;
     this.name = config.name;
     this.host = config.host;
-    this.SerialNumber = config.SerialNumber;
+    this.SerialNumber = config.serialnumber;
     this.updateInterval = config.updateInterval || 10000;
     this.acTempSensorShift = config.acTempSensorShift || 40;
     this.useTargetTempAsCurrent = config.useTargetTempAsCurrent || false;
@@ -303,7 +303,7 @@ TosotHeaterCooler.prototype = {
         let speed = this.device.getFanSpeed();
         speed = speed === commands.fanSpeed.value.auto ? 6 : speed;
         this.log.debug('Triggered GET Rotation Speed:' + speed);
-
+        
         callback(null, speed);
 
     },
