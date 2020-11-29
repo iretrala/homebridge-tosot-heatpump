@@ -267,6 +267,8 @@ TosotHeaterCooler.prototype = {
                     break;
                 default:
                     mode = commands.mode.value.auto;
+                    this.device.setTemp(20);
+                    this.log.info("Overriding Auto Temp to 20");
             }
             this.device.setMode(mode);
         }
