@@ -309,6 +309,7 @@ TosotHeaterCooler.prototype = {
         }
         callback(null, state);
     },
+    
     getTargetFanState: function (callback) {
         let mode = this.device.getMode(),
             state;
@@ -327,6 +328,7 @@ TosotHeaterCooler.prototype = {
         }
         callback(null, state);
     },
+    
     setTargetFanState: function (TargetFanState, callback, context) {
         if (this._isContextValid(context)){
             let mode;
@@ -345,7 +347,8 @@ TosotHeaterCooler.prototype = {
         }
 
         callback();
-    };
+    },
+    
     setTargetHeaterCoolerState: function (TargetHeaterCoolerState, callback, context) {
         if (this._isContextValid(context)) {
             let mode;
