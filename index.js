@@ -22,6 +22,20 @@ function TosotHeaterCooler(log, config) {
     this.services = [];
 
     this.TosotACService = new Service.HeaterCooler(this.name);
+    this.TosotFanService = new Service.Fanv2(this.name); // We need fan Service for "Fan Only"
+    
+    this.TosotFanService
+        .getCharacteristic(Characteristic.Active)
+        .on('get', this.getFanActive.bind(this));
+    
+    this.TosotFanService
+        .getCharacteristic(Characteristic.CurrentFanState)
+        .on('get', this.getCurrentFanState.bind(this));
+    
+    this.TosotFanService
+        .getCharacteristic(Characteristic.TargetFanState)
+        .on('get', this.getTargetFanState.bind(this))
+        .on('set', this.setTargetFanState.bind(this));
 
     this.TosotACService
         .getCharacteristic(Characteristic.Active)
@@ -88,6 +102,7 @@ function TosotHeaterCooler(log, config) {
 
 
     this.services.push(this.TosotACService);
+    this.services.push(this.TosotFanService);
 
     this.serviceInfo = new Service.AccessoryInformation();
 
@@ -120,6 +135,24 @@ TosotHeaterCooler.prototype = {
                 me.getActive((x, val) => {
                     me.TosotACService
                         .getCharacteristic(Characteristic.Active)
+                        .updateValue(val);
+                });
+                
+                me.getFanActive((x, val) => {
+                    me.TosotFanService
+                        .getCharacteristic(Characteristic.Active)
+                        .updateValue(val);
+                });
+                
+                me.getCurrentFanState((x, val) => {
+                    me.TosotFanService
+                        .getCharacteristic(Characteristic.CurrentFanState)
+                        .updateValue(val);
+                });
+                
+                me.getTargetFanState((x, val) => {
+                    me.TosotFanService
+                        .getCharacteristic(Characteristic.TargetFanState)
                         .updateValue(val);
                 });
 
@@ -195,12 +228,17 @@ TosotHeaterCooler.prototype = {
         }
         callback();
     },
-
     getActive: function (callback) {
         callback(null,
             this.device.getPower() === commands.power.value.off
                 ? Characteristic.Active.INACTIVE
                 : Characteristic.Active.ACTIVE);
+    },
+    getFanActive: function (callback) {
+      callback(null,
+          this.device.getPower() === commands.power.value.off
+              ? Characteristic.Active.INACTIVE
+              : Characteristic.Active.ACTIVE);
     },
     getCurrentHeaterCoolerState: function (callback) {
         let mode = this.device.getMode(),
@@ -221,6 +259,24 @@ TosotHeaterCooler.prototype = {
         }
 
         callback(null, state);
+
+    },
+    getCurrentFanState: function (callback) {
+      let mode = this.device.getPower(),
+          state;
+
+      switch (mode) {
+          case commands.power.value.off:
+              state = Characteristic.CurrentFanState.INACTIVE;
+              break;
+          case commands.mode.value.on:
+              state = Characteristic.CurrentFanState.BLOWING_AIR;
+              break;
+          default:
+              state = Characteristic.CurrentFanState.IDLE;
+      }
+
+      callback(null, state);
 
     },
     getCurrentTemperature: function (callback) {
@@ -253,11 +309,50 @@ TosotHeaterCooler.prototype = {
         }
         callback(null, state);
     },
+    getTargetFanState: function (callback) {
+        let mode = this.device.getMode(),
+            state;
 
+        switch (mode) {
+            case commands.mode.value.cool:
+                state = Characteristic.TargetFanState.AUTO;
+                break;
+            case commands.mode.value.heat:
+                state = Characteristic.TargetFanState.AUTO;
+                break;
+            case commands.mode.value.fan:
+                state = Characteristic.TargetFanState.MANUAL
+            default:
+                state = Characteristic.TargetHeaterCoolerState.AUTO;
+        }
+        callback(null, state);
+    },
+    setTargetFanState: function (TargetFanState, callback, context) {
+        if (this._isContextValid(context)){
+            let mode;
+            
+            this.log.debug("Variable for SetTargetFanState is:" + TargetFanState)
+            switch (TargetFanState) {
+                case Characteristic.TargetFanState.MANUAL:
+                    mode = commands.mode.value.fan;
+                    break;
+                default:
+                    mode = commands.mode.value.auto;
+                    this.device.setTemp(20);
+                    this.log.info("Overriding Auto Temp to 20");
+            }
+            this.device.setMode(mode);
+        }
+
+        callback();
+        }
+
+    },
     setTargetHeaterCoolerState: function (TargetHeaterCoolerState, callback, context) {
         if (this._isContextValid(context)) {
             let mode;
 
+            this.log.debug("Variable for SetTargetHeaterCoolerState is:" + TargetHeaterCoolerState)
             switch (TargetHeaterCoolerState) {
                 case Characteristic.TargetHeaterCoolerState.HEAT:
                     mode = commands.mode.value.heat;
