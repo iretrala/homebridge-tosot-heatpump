@@ -261,9 +261,11 @@ TosotHeaterCooler.prototype = {
             switch (TargetHeaterCoolerState) {
                 case Characteristic.TargetHeaterCoolerState.HEAT:
                     mode = commands.mode.value.heat;
+                    this.log.info("Changed to mode: heat");
                     break;
                 case Characteristic.TargetHeaterCoolerState.COOL:
                     mode = commands.mode.value.cool;
+                    this.log.info("Changed to mode: cool");
                     break;
                 default:
                     mode = commands.mode.value.auto;
@@ -277,13 +279,18 @@ TosotHeaterCooler.prototype = {
     },
 
     getTargetTemperature: function (callback) {
-        callback(null, this.device.getTemp());
+        let temp = this.device.getTemp();
+        if (temp < 16) {
+            temp = 16;
+        }
+        callback(null, temp);
     },
 
     setTargetTemperature: function (TargetTemperature, callback, context) {
         if (this._isContextValid(context)) {
             this.device.setTemp(parseInt(TargetTemperature));
         }
+        this.log.info("Set temp to " + TargetTemperature);
         callback();
     },
     getSwingMode: function (callback) {
