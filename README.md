@@ -14,8 +14,21 @@ Should work with all Tosot and partners (Tosot+ app) heatpumps.
 For each AC device you need to add an accessory and specify the IP address of the device.
 
 
+## Configuration options
+
+| Key | Required | Default | Description |
+| --- | --- | --- | --- |
+| `accessory` | yes | — | Must be exactly `TosotHeaterCooler`. |
+| `name` | yes | — | Display name of the accessory in HomeKit. |
+| `host` | yes | — | IP address of the AC unit. |
+| `serialnumber` | no | — | Serial number shown in the Home app's accessory info. |
+| `acModel` | no | `Tosot HeaterCooler` | Model name shown in the Home app's accessory info. |
+| `useTargetTempAsCurrent` | no | `false` | Set to `true` for units without a built-in room temperature sensor, so the current temperature reported to HomeKit falls back to the target temperature. |
+| `acTempSensorShift` | no | `40` | Offset subtracted from the raw sensor reading to get the room temperature (only used when `useTargetTempAsCurrent` is `false`). |
+| `updateInterval` | no | `10000` | Polling interval in milliseconds for status updates from the device. |
+
 ## Usage Example:
-```
+```json
 {
     "bridge": {
         "name": "Homebridge",
@@ -25,16 +38,16 @@ For each AC device you need to add an accessory and specify the IP address of th
     },
     "accessories": [
         {
-            "accessory": "TosotHeatpump",
+            "accessory": "TosotHeaterCooler",
             "host": "192.168.1.X",
             "name": "Living room AC",
             "acModel": "Tosot X5302",
-            "serialnumber": 25b2t646df642t6564
-            "useTargetTempAsCurrent": true, // for AC W/O builded in temp sensor
+            "serialnumber": "25b2t646df642t6564",
+            "useTargetTempAsCurrent": true,
             "updateInterval": 10000
         },
         {
-            "accessory": "TosotHeatpump",
+            "accessory": "TosotHeaterCooler",
             "host": "192.168.1.Y",
             "name": "Bedroom AC",
             "acModel": "C&H",
