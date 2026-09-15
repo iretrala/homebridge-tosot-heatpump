@@ -53,6 +53,14 @@ class Device {
 
         that.device = {};
         that.device.props = {};
+        that.statusInterval = null;
+
+        // Handle socket-level errors (e.g. EADDRINUSE) so they don't crash the process
+        this.socket.on('error', (err) => {
+            console.log("[TosotHeatpump]: socket error on host %s", that.options.host, err);
+            that.options.onError(that.device);
+        });
+
         // Initialize connection and bind with device
         that._connectToDevice(that.options.host, that.options.port);
 
@@ -68,7 +76,7 @@ class Device {
         var that = this;
         try {
             this.socket.bind(port, "0.0.0.0", () => {
-                const message = new Buffer(JSON.stringify({t: 'scan'}));
+                const message = Buffer.from(JSON.stringify({t: 'scan'}));
                 this.socket.setBroadcast(false);
                 console.log("[TosotHeatpump]: connecting to %s [using source port %d]", address, port);
                 this.socket.send(message, 0, message.length, that.options.defaultPort, address, error => {
@@ -124,7 +132,7 @@ class Device {
             uid: 0,
             pack: encryptedBoundMessage
         };
-        const toSend = new Buffer(JSON.stringify(request));
+        const toSend = Buffer.from(JSON.stringify(request));
         this.socket.send(toSend, 0, toSend.length, device.port, device.address, error => {
             if (error) {
                 console.log("[TosotHeatpump]: _sendBindRequest socket error", device, error);
@@ -171,8 +179,8 @@ class Device {
             console.log("[TosotHeatpump] We received response from %s but we are looking for %s", rinfo.address, that.options.host);
             return;
         }
-        const message = JSON.parse(msg + '');
         try {
+            const message = JSON.parse(msg + '');
             // Extract encrypted package from message using device key (if available)
             const pack = encryptionService.decrypt(message, (that.device || {}).key);
             // If package type is response to handshake
@@ -187,8 +195,12 @@ class Device {
             if (pack.t === 'bindok') {
                 that._confirmBinding(message.cid, pack.key);
 
-                // Start requesting device status on set interval
-                setInterval(that._requestDeviceStatus.bind(this, that.device), that.options.updateInterval);
+                // Start requesting device status on set interval, replacing any previous
+                // one so a repeated bindok doesn't stack duplicate pollers
+                if (that.statusInterval) {
+                    clearInterval(that.statusInterval);
+                }
+                that.statusInterval = setInterval(that._requestDeviceStatus.bind(this, that.device), that.options.updateInterval);
                 that.options.onConnected(that.device)
                 return;
             }
@@ -251,7 +263,7 @@ class Device {
             uid: 0,
             pack: encryptedMessage
         };
-        const serializedRequest = new Buffer(JSON.stringify(request));
+        const serializedRequest = Buffer.from(JSON.stringify(request));
         try {
             this.socket.send(serializedRequest, 0, serializedRequest.length, port, address, error => {
                 if (error) {

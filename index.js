@@ -3,7 +3,6 @@ const deviceFactory = require('./app/deviceFactory');
 let Service, Characteristic;
 
 module.exports = function (homebridge) {
-    console.log(homebridge.platformAccessory);
     Service = homebridge.hap.Service;
     Characteristic = homebridge.hap.Characteristic;
     homebridge.registerAccessory('homebridge-tosot-HeaterCooler', 'TosotHeaterCooler', TosotHeaterCooler);
@@ -13,7 +12,7 @@ function TosotHeaterCooler(log, config) {
     this.log = log;
     this.name = config.name;
     this.host = config.host;
-    this.SerialNumber = config.SerialNumber;
+    this.SerialNumber = config.serialnumber;
     this.updateInterval = config.updateInterval || 10000;
     this.acTempSensorShift = config.acTempSensorShift || 40;
     this.useTargetTempAsCurrent = config.useTargetTempAsCurrent || false;
@@ -189,10 +188,8 @@ TosotHeaterCooler.prototype = {
         me.device = deviceFactory.connect(deviceOptions);
     },
 
-    setActive: function (Active, callback, context) {
-        if (this._isContextValid(context)) {
-            this.device.setPower(Active === Characteristic.Active.ACTIVE ? commands.power.value.on : commands.power.value.off);
-        }
+    setActive: function (Active, callback) {
+        this.device.setPower(Active === Characteristic.Active.ACTIVE ? commands.power.value.on : commands.power.value.off);
         callback();
     },
 
@@ -203,6 +200,11 @@ TosotHeaterCooler.prototype = {
                 : Characteristic.Active.ACTIVE);
     },
     getCurrentHeaterCoolerState: function (callback) {
+        if (this.device.getPower() === commands.power.value.off) {
+            callback(null, Characteristic.CurrentHeaterCoolerState.INACTIVE);
+            return;
+        }
+
         let mode = this.device.getMode(),
             state;
 
@@ -213,11 +215,8 @@ TosotHeaterCooler.prototype = {
             case commands.mode.value.heat:
                 state = Characteristic.CurrentHeaterCoolerState.HEATING;
                 break;
-            case commands.mode.value.auto:
-                state = Characteristic.CurrentHeaterCoolerState.IDLE;
-                break;
             default:
-                state = Characteristic.CurrentHeaterCoolerState.INACTIVE;
+                state = Characteristic.CurrentHeaterCoolerState.IDLE;
         }
 
         callback(null, state);
@@ -254,34 +253,41 @@ TosotHeaterCooler.prototype = {
         callback(null, state);
     },
 
-    setTargetHeaterCoolerState: function (TargetHeaterCoolerState, callback, context) {
-        if (this._isContextValid(context)) {
-            let mode;
+    setTargetHeaterCoolerState: function (TargetHeaterCoolerState, callback) {
+        let mode;
 
-            switch (TargetHeaterCoolerState) {
-                case Characteristic.TargetHeaterCoolerState.HEAT:
-                    mode = commands.mode.value.heat;
-                    break;
-                case Characteristic.TargetHeaterCoolerState.COOL:
-                    mode = commands.mode.value.cool;
-                    break;
-                default:
-                    mode = commands.mode.value.auto;
-            }
-            this.device.setMode(mode);
+        switch (TargetHeaterCoolerState) {
+            case Characteristic.TargetHeaterCoolerState.HEAT:
+                mode = commands.mode.value.heat;
+                this.log.info("Changed to mode: heat");
+                break;
+            case Characteristic.TargetHeaterCoolerState.COOL:
+                mode = commands.mode.value.cool;
+                this.log.info("Changed to mode: cool");
+                break;
+            default:
+                mode = commands.mode.value.auto;
+                this.device.setTemp(20);
+                this.log.info("Overriding Auto Temp to 20");
         }
+        this.device.setMode(mode);
 
         callback();
     },
 
     getTargetTemperature: function (callback) {
-        callback(null, this.device.getTemp());
+        let temp = this.device.getTemp();
+        if (temp < 16) {
+            temp = 16;
+        } else if (temp > 30) {
+            temp = 30;
+        }
+        callback(null, temp);
     },
 
-    setTargetTemperature: function (TargetTemperature, callback, context) {
-        if (this._isContextValid(context)) {
-            this.device.setTemp(parseInt(TargetTemperature));
-        }
+    setTargetTemperature: function (TargetTemperature, callback) {
+        this.device.setTemp(parseInt(TargetTemperature));
+        this.log.info("Set temp to " + TargetTemperature);
         callback();
     },
     getSwingMode: function (callback) {
@@ -290,27 +296,21 @@ TosotHeaterCooler.prototype = {
                 ? Characteristic.SwingMode.SWING_DISABLED
                 : Characteristic.SwingMode.SWING_ENABLED);
     },
-    setSwingMode: function (SwingMode, callback, context) {
-        if (this._isContextValid(context)) {
-            this.device.setSwingVert(SwingMode === Characteristic.SwingMode.SWING_DISABLED
-                ? commands.swingVert.value.default
-                : commands.swingVert.value.full);
-        }
+    setSwingMode: function (SwingMode, callback) {
+        this.device.setSwingVert(SwingMode === Characteristic.SwingMode.SWING_DISABLED
+            ? commands.swingVert.value.default
+            : commands.swingVert.value.full);
         callback();
     },
 
     getRotationSpeed: function (callback) {
         let speed = this.device.getFanSpeed();
         speed = speed === commands.fanSpeed.value.auto ? 6 : speed;
-
         callback(null, speed);
-
     },
-    setRotationSpeed: function (RotationSpeed, callback, context) {
-        if (this._isContextValid(context)) {
-            let speed = RotationSpeed === 6 ? commands.fanSpeed.value.auto : RotationSpeed;
-            this.device.setFanSpeed(speed);
-        }
+    setRotationSpeed: function (RotationSpeed, callback) {
+        let speed = RotationSpeed === 6 ? commands.fanSpeed.value.auto : RotationSpeed;
+        this.device.setFanSpeed(speed);
         callback();
     },
 
@@ -320,12 +320,5 @@ TosotHeaterCooler.prototype = {
         this.log.info("identify: set temperature to 22");
 
         callback();
-    },
-
-    getServices: function () {
-        return this.services;
-    },
-    _isContextValid: function (context) {
-        return context !== 'fromSetValue';
     }
 };
